@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -77,7 +78,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -161,7 +164,6 @@ fun WisataApp(
                 )
             }
         } else {
-            // Animasi perpindahan antar layar agar UX terasa mulus
             AnimatedContent(
                 targetState = uiState.currentScreen,
                 transitionSpec = {
@@ -276,12 +278,10 @@ fun HomeExploreContent(
         verticalArrangement = Arrangement.spacedBy(14.dp),
         modifier = Modifier.fillMaxSize()
     ) {
-        // 1. Hero Banner
         item {
             HeroWelcomeBanner(totalPlaces = LocalPlacesDataProvider.allPlaces.size)
         }
 
-        // 2. Search Bar & Filter Favorit
         item {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
@@ -328,7 +328,6 @@ fun HomeExploreContent(
             }
         }
 
-        // 3. Tampilkan Hasil Pencarian/Favorit ATAU Daftar Kategori
         if (isFiltering) {
             val results = uiState.filteredGlobalPlaces
             item {
@@ -620,24 +619,14 @@ fun PlaceCard(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    contentAlignment = Alignment.Center,
+                Image(
+                    painter = painterResource(id = place.imageRes),
+                    contentDescription = place.name,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .size(52.dp)
+                        .size(68.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(place.category.startColor, place.category.endColor)
-                            )
-                        )
-                ) {
-                    Icon(
-                        imageVector = place.icon,
-                        contentDescription = place.name,
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                }
+                )
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -721,56 +710,62 @@ fun PlaceDetailContent(
     Column(
         modifier = modifier.verticalScroll(rememberScrollState())
     ) {
-        // Gradient Hero Header
+        // Photo Hero Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
+                .height(220.dp)
                 .clip(RoundedCornerShape(22.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = listOf(place.category.startColor, place.category.endColor)
-                    )
-                )
-                .padding(20.dp)
         ) {
+            Image(
+                painter = painterResource(id = place.imageRes),
+                contentDescription = place.name,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.25f),
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.72f)
+                            )
+                        )
+                    )
+            )
+
             IconButton(
                 onClick = onFavoriteClick,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                    .padding(12.dp)
+                    .background(Color.Black.copy(alpha = 0.4f), CircleShape)
             ) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     contentDescription = "Favorit",
-                    tint = if (isFavorite) Color(0xFFFFCDD2) else Color.White
+                    tint = if (isFavorite) Color(0xFFFF5252) else Color.White
                 )
             }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.align(Alignment.Center)
+            Surface(
+                shape = RoundedCornerShape(50),
+                color = Color.Black.copy(alpha = 0.55f),
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(14.dp)
             ) {
-                Icon(
-                    imageVector = place.icon,
-                    contentDescription = place.name,
-                    tint = Color.White,
-                    modifier = Modifier.size(60.dp)
+                Text(
+                    text = "${place.category.title}  •  ★ ${place.rating}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    shape = RoundedCornerShape(50),
-                    color = Color.White.copy(alpha = 0.2f)
-                ) {
-                    Text(
-                        text = "${place.category.title}  •  ★ ${place.rating}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                    )
-                }
             }
         }
 
@@ -806,7 +801,6 @@ fun PlaceDetailContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Kartu Informasi Ringkas
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
@@ -841,7 +835,6 @@ fun PlaceDetailContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Kotak Tips Berkunjung
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = Color(0xFFFFF8E1),
@@ -891,7 +884,6 @@ fun PlaceDetailContent(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Tombol Aksi Interaktif (Google Maps & Bagikan)
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth()

@@ -1,5 +1,6 @@
 package com.example.aplikasirekomendasiwisatayogyakarta.model
 
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.graphics.vector.ImageVector
 
 data class Place(
@@ -13,5 +14,6 @@ data class Place(
     val tags: List<String>,
     val visitingTip: String,
     val description: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    @DrawableRes val imageRes: Int
 )
